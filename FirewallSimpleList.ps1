@@ -3,17 +3,20 @@
         Script pulls Firewall Log from Local Workstation.
 
     .OUTPUTS
-        Report found under $logPath below, default is c:\COD-Logs\COMPUTERNAME\DATETIME\$OutputFile
+        Report found under $logPath below, default is c:\COD-Logs\COMPUTERNAME\DATETIME
     
     .EXAMPLE
-        Option 1
-        1. Command Prompt (Admin) "powershell -Executionpolicy Bypass -File PATH\FILENAME.ps1"
+        1. PowerShell 5.1 Command Prompt (Admin) 
+            "powershell -Executionpolicy Bypass -File PATH\FILENAME.ps1"
+        2. Powershell 7.2.1 Command Prompt (Admin) 
+            "pwsh -Executionpolicy Bypass -File PATH\FILENAME.ps1"
 
     .NOTES
-        Author Perk
-        Last Update 12/31/21
+        Author Perkins
+        Last Update 1/7/22
+        Updated 1/7/22 Tested and Validated PowerShell 5.1 and 7.2.1
     
-        Powershell 5.1 or higher
+        Powershell 5 or higher
         Run as Administrator
     
     .FUNCTIONALITY
@@ -21,9 +24,9 @@
         Active Directory
     
     .Link
-    https://github.com/COD-Team
-    YouTube Channel with this Video https://www.youtube.com/channel/UCWtXSYvBXU6YqzqBqNcH_Kw
-
+        https://github.com/COD-Team
+        YouTube Video https://youtu.be/4LSMP0gj1IQ
+        
     Thanks to Twan van Beers - Across my Lab I noticed that two computers were not functioning as intented
     All the firewall settings were in place, but there were no logs. 
     https://neroblanco.co.uk/2017/03/windows-firewall-not-writing-logfiles/
@@ -114,7 +117,7 @@ $LogEntries | Select-Object Datetime,
     #IcmpType, 
     #IcmpCode, 
     #Info, 
-    Path -First 100 | Format-Table 
+    Path -Last 100 | Format-Table 
     #Path | Where-Object Protocol -eq ICMP | Format-Table 
     #Path | Where-Object DestinationPort -eq 8089 | Format-Table 
     #Path | Export-Csv C:\COD-Logs\Firewall.csv -NoTypeInformation
