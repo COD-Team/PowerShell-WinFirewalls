@@ -1,23 +1,23 @@
-﻿<#
+<#
     .DESCRIPTION
         Script Attempts to communicate with Active Directory and all Windows Computers in the Domain
         Pull SourceIPs from all computers in the domain, compares to Local DNS Server to identify rogue devices in network. 
 
-    .PARAMETER NAME
-        No Parameters, but control Functions by commenting or uncommenting Functions under $TASKS (See example Task/Function)
-
     .OUTPUTS
-        Report found under $logPath below, Setup Networkshare for \\SERVERNAME\SHARE\COD-Logs\DOMAINNAME\DATETIME
+        Report found under $logPath below, default is c:\COD-Logs\COMPUTERNAME\DATETIME
     
     .EXAMPLE
-        Option 1
-        1. Command Prompt (Admin) "powershell -Executionpolicy Bypass -File PATH\FILENAME.ps1"
+        1. PowerShell 5.1 Command Prompt (Admin) 
+            "powershell -Executionpolicy Bypass -File PATH\FILENAME.ps1"
+        2. Powershell 7.2.1 Command Prompt (Admin) 
+            "pwsh -Executionpolicy Bypass -File PATH\FILENAME.ps1"
 
     .NOTES
-        Author Perk
-        Last Update 12/31/21
+        Author Perkins
+        Last Update 1/7/22
+        Updated 1/7/22 Tested and Validated PowerShell 5.1 and 7.2.1
     
-        Powershell 5.1 or higher
+        Powershell 5 or higher
         Run as Administrator
     
     .FUNCTIONALITY
@@ -25,9 +25,9 @@
         Active Directory
     
     .Link
-    https://github.com/COD-Team
-    YouTube Channel with this Video https://www.youtube.com/channel/UCWtXSYvBXU6YqzqBqNcH_Kw
-
+        https://github.com/COD-Team
+        YouTube Video https://youtu.be/4LSMP0gj1IQ
+        
     Thanks to Twan van Beers - Across my Lab I noticed that two computers were not functioning as intented
     All the firewall settings were in place, but there were no logs. 
     https://neroblanco.co.uk/2017/03/windows-firewall-not-writing-logfiles/
@@ -59,7 +59,10 @@ if ($env:computername  -eq $env:userdomain)
     }
 
 # Get Domain Name, Creates a DomainName Folder to Store Reports
-$DomainName = (Get-WmiObject win32_computersystem).domain
+# Added 1/7/21 Powershell 7.2.1 Compatibility Get-WmiObject not compatible with Powershell 7.2.1
+#$DomainName = (Get-WmiObject win32_computersystem).domain
+$DomainName = (Get-CimInstance Win32_ComputerSystem).Domain
+
 
 # Get Computer Name
 $ComputerName = $env:computername
@@ -74,8 +77,16 @@ $logpath = "\\DC2016\SHARES\COD-Logs\$DomainName\$(get-date -format "yyyyMMdd-hh
 #Counter for Write-Progress
 $Counter = 0
 
+# Added 1/7/21 PowerShell 7.2.1 Compatibility for Out-File not printing escape characters
+if ($PSVersionTable.PSVersion.major -ge 7) {$PSStyle.OutputRendering = 'PlainText'}
+
 # Logfile where all the results are dumped
 $OutputFile = "$logpath\Firewall.log"
+
+$FirewallLogFile = 'C:\Windows\system32\LogFiles\Firewall\pfirewall.log'
+$DNSServer = @('172.16.32.201','172.16.33.31')
+#$DNSServer = "172.16.32.201"
+$JobSleep = 2
 
 #Sets Header information for the Reports
 Write-Output "[INFO] Running $PSCommandPath" | Out-File -Append $OutputFile
@@ -83,7 +94,6 @@ Write-Output (Get-Date) | Out-File -Append $OutputFile
 Write-Output "POWERSHELL COD ASSESSMENT SCRIPT RESULTS" | Out-File -Append $OutputFile
 Write-Output "Executed Script from $ComputerName on Domain $DomainName" | Out-File -Append $OutputFile
 Write-Output "------------------------------------------------------------------------------------------------------------------------" | Out-File -Append $OutputFile
-
 
 #$DomainControllers = (Get-ADDomainController | Select-Object Name)
 $DomainControllers = (Get-ADForest).Domains | ForEach-Object {Get-ADDomain -Identity $_ | Select-Object -ExpandProperty ReplicaDirectoryServers}
@@ -140,10 +150,6 @@ $GetOnline = Invoke-command –ComputerName $DomainComputers.Name -ErrorAction S
         $Online | Out-File -Append $OutputFile
     }
 
-$FirewallLogFile = 'C:\Windows\system32\LogFiles\Firewall\pfirewall.log'
-$DNSServer = @('172.16.32.201','172.16.33.31')
-#$DNSServer = "172.16.32.201"
-$JobSleep = 2
 
 ###################################################################################################################################################################
 Function GetFirewallLog
