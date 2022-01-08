@@ -5,17 +5,20 @@
         Only effective with a local DNS Server and all known devices are registered. Will identify devices NOT in DNS. 
 
     .OUTPUTS
-        Report found under $logPath below, default is c:\COD-Logs\COMPUTERNAME\DATETIME\$OutputFile
+        Report found under $logPath below, default is c:\COD-Logs\COMPUTERNAME\DATETIME
     
     .EXAMPLE
-        Option 1
-        1. Command Prompt (Admin) "powershell -Executionpolicy Bypass -File PATH\FILENAME.ps1"
+        1. PowerShell 5.1 Command Prompt (Admin) 
+            "powershell -Executionpolicy Bypass -File PATH\FILENAME.ps1"
+        2. Powershell 7.2.1 Command Prompt (Admin) 
+            "pwsh -Executionpolicy Bypass -File PATH\FILENAME.ps1"
 
     .NOTES
-        Author Perk
-        Last Update 12/31/21
+        Author Perkins
+        Last Update 1/7/22
+        Updated 1/7/22 Tested and Validated PowerShell 5.1 and 7.2.1
     
-        Powershell 5.1 or higher
+        Powershell 5 or higher
         Run as Administrator
     
     .FUNCTIONALITY
@@ -23,9 +26,9 @@
         Active Directory
     
     .Link
-    https://github.com/COD-Team
-    YouTube Channel with this Video https://www.youtube.com/channel/UCWtXSYvBXU6YqzqBqNcH_Kw
-
+        https://github.com/COD-Team
+        YouTube Video https://youtu.be/4LSMP0gj1IQ
+        
     Thanks to Twan van Beers - Across my Lab I noticed that two computers were not functioning as intented
     All the firewall settings were in place, but there were no logs. 
     https://neroblanco.co.uk/2017/03/windows-firewall-not-writing-logfiles/
@@ -42,6 +45,9 @@ $logpath = "C:\COD-Logs\$ComputerName\$(get-date -format "yyyyMMdd-hhmmss")"
           New-Item -ItemType Directory -Force -Path $logpath | Out-Null
     }
 
+# Added 1/7/21 PowerShell 7.2.1 Compatibility for Out-File not printing escape characters
+if ($PSVersionTable.PSVersion.major -ge 7) {$PSStyle.OutputRendering = 'PlainText'}
+
 $FirewallLogFile = 'C:\Windows\system32\LogFiles\Firewall\pfirewall.log'
 $OutputFile = "$logpath\Firewall-DNS.log"
 
@@ -55,7 +61,7 @@ class WindowsFwLogEntry
 {
     [datetime]$DateTime
     [string]$Action
-    [string]$Protocol
+    [string]$Protocol 
     [ipaddress]$SourceIP
     [ipaddress]$DestinationIP
     [string]$SourcePort
