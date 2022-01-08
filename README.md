@@ -1,3 +1,5 @@
+# Updated file for PowerShell 7.2.1 Compatibility
+
 # PowerShell-WinFirewalls
 PowerShell Scripts to Read, filter and export Firewall Logs for Standalone and Domain Computers
 
